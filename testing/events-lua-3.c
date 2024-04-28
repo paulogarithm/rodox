@@ -36,8 +36,8 @@ static int event_close(lua_State *L)
     if (event == NULL)
         return luaL_error(L, "close: Can't get userdata");
     printf("Destroyer\n");
-    if (event->pid and kill(event->pid, SIGTERM) == -1)
-        lua_warning(L, "Can't kill %d", event->pid);
+    // if (event->pid and kill(event->pid, SIGTERM) == -1)
+    //     lua_warning(L, "Can't kill %d", event->pid);
     return 1;
 }
 
