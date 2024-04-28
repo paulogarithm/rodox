@@ -15,9 +15,9 @@ typedef struct {
     pid_t *list;
 } pidlist_t;
 
-static pidlist_t *singleton_pids(void)
+static pidlist_t *binder_singleton(void)
 {
-    static pidlist_t list = {0};
+    static pidlist_t list = { .list = NULL };
 
     return &list;
 }
@@ -29,36 +29,52 @@ static int event_push(lua_State *L)
     if (not lua_isinteger(L, -1))
         return luaL_error(L, "No integer");
     n = lua_tointeger(L, -1);
-    singleton_pids()->list[0] = n;
-    printf("%d\n", singleton_pids()->list[0]);
+    binder_singleton()->list[0] = n;
+    printf("%d\n", binder_singleton()->list[0]);
     return 0;
 }
 
-static int code_binder(lua_State *L)
+static void binder_release(int id)
+{
+    if (shmdt(binder_singleton()->list) == -1)
+        perror("shmdt");
+    if (shmctl(id, IPC_RMID, NULL) == -1)
+        perror("shmctl");
+}
+
+static int binder_create(int *id)
+{
+    *id = shmget(IPC_PRIVATE, sizeof(int) * 2, IPC_CREAT | 0666);
+    if (*id == -1)
+        return -1;
+    binder_singleton()->list = shmat(*id, NULL, 0);
+    if (binder_singleton()->list == ((void *)-1))
+        return -1;
+    memset(binder_singleton()->list, 0, sizeof(int) * 2);
+    return 0;
+}
+
+static int binder_init(lua_State *L)
 {
     pid_t pid = 0;
-    int id = shmget(IPC_PRIVATE, sizeof(int) * 2, IPC_CREAT | 0666);
+    int id = 0;
 
-    if (id == -1)
-        return luaL_error(L, "Can't get shared mem");
-    singleton_pids()->list = shmat(id, NULL, 0);
-    if (singleton_pids()->list == ((void *)-1))
-        return luaL_error(L, "Can't get the data");
-    memset(singleton_pids()->list, 0, sizeof(int) * 2);
+    if (binder_create(&id) == -1)
+        return luaL_error(L, "Can't alloc shared mem");
     pid = fork();
     if (pid == -1)
         return luaL_error(L, "Can't fork");
     if (pid == 0)
         return 1;
-    printf("Binding the parent...\n");
     getchar();
-    printf("%d\n", singleton_pids()->list[0]);
+    printf("%d\n", binder_singleton()->list[0]);
+    binder_release(id);
     return -1;
 }
 
 int luaopen_events(lua_State *L)
 {
-    if (code_binder(L) == -1)
+    if (binder_init(L) == -1)
         _exit(0);
     lua_newtable(L);
     lua_pushstring(L, "push");
