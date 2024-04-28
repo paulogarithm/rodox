@@ -8,10 +8,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <iso646.h>
 #include <sys/shm.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <iso646.h>
 
 #define SHM_ERR ((void *)-1)
 
