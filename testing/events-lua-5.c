@@ -11,8 +11,10 @@
 #include <sys/types.h>
 #include <sys/shm.h>
 
+#define EVENT_MAX __UINT16_MAX__
+
 typedef struct {
-    pid_t list[10];
+    pid_t list[EVENT_MAX];
     size_t nmemb;
 } pidlist_t;
 
