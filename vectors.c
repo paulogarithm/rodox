@@ -51,18 +51,18 @@ void vector_free(void *v)
     free(((char *)v) - sizeof(vector_t));
 }
 
-// int main(int argc, char const *argv[])
-// {
-//     int *v = vector_new(sizeof(int));
-//     int n = 3;
+int main(int argc, char const *argv[])
+{
+    int *v = vector_new(sizeof(int));
+    int n = 3;
 
-//     vector_push(&v, &n);
-//     vector_push(&v, &n);
-//     vector_push(&v, &n);
-//     vector_push(&v, &n);
-//     vector_push(&v, &n);
-//     printf("%d\n", v[4]);
-//     vector_free(v);
-//     return 0;
-// }
+    vector_push(&v, &n);
+    vector_push(&v, &n);
+    vector_push(&v, &n);
+    vector_push(&v, &n);
+    vector_push(&v, &n);
+    printf("%d\n", v[4]);
+    vector_free(v);
+    return 0;
+}
 
