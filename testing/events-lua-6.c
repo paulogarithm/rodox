@@ -2,6 +2,7 @@
 #include <lua5.4/lauxlib.h>
 
 #include <stdlib.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <unistd.h>
@@ -10,6 +11,8 @@
 #include <sys/signal.h>
 #include <sys/types.h>
 #include <sys/shm.h>
+
+#include "chain/chain.h"
 
 int asprintf(char **strp, const char *fmt, ...);
 
@@ -24,9 +27,15 @@ typedef struct {
     pidlist_t *get;
 } holder_t;
 
-typedef struct {
+typedef struct s_node {
+    struct s_node *next;
     int index;
+} node_t;
+
+typedef struct {
+    node_t *head;
 } event_t;
+
 
 static holder_t *binder(void)
 {
@@ -47,6 +56,14 @@ static void sighandler(int sig)
     if (sig != SIGUSR1)
         return;
     *notif() = true;
+}
+
+static bool node_new(void *node, va_list *ap)
+{
+    node_t *self = node;
+
+    self->index = va_arg(*ap, int);
+    return 1;
 }
 
 static void binder_release(int id)
@@ -95,12 +112,13 @@ static int event_once(lua_State *L)
     event_t *event = lua_touserdata(L, -2);
     pid_t pid = 0;
     pidlist_t *b = binder()->get;
+    int index = b->nmemb;
 
     if (event == NULL)
         return luaL_error(L, "once: Can't get userdata.");
     if (signal(SIGUSR1, sighandler) == SIG_ERR)
         return luaL_error(L, "once: Can't catch signal.");
-    event->index = binder()->get->nmemb;
+    chain_push(&event->head, sizeof(node_t), node_new, index);
     pid = fork();
     if (pid == -1)
         return luaL_error(L, "once: Can't fork.");
@@ -108,9 +126,9 @@ static int event_once(lua_State *L)
         b->list[b->nmemb++] = pid;
         return 0;
     }
-    printf("Waiting for event on %d %d...\n", getpid(), event->index);
+    printf("Waiting for event on %d...\n", getpid());
     while (not *notif());
-    b->list[event->index] = 0;
+    b->list[index] = 0;
     lua_call(L, 0, 0);
     _exit(0);
 }
@@ -122,31 +140,31 @@ static int event_fire(lua_State *L)
 
     if (event == NULL)
         return luaL_error(L, "fire: Can't get userdata.");
-    if (event->index == -1)
-        goto error;
-    pid = binder()->get->list[event->index];
-    if ((not pid) or (kill(pid, SIGUSR1) == -1))
-        goto error;
+    if (event->head == NULL) {
+        lua_pushboolean(L, false);
+        return 1;
+    }
+    for (node_t *it = event->head; it != NULL; it = it->next) {
+        pid = binder()->get->list[it->index];
+        pid and kill(pid, SIGUSR1);
+    }
     lua_pushboolean(L, true);
-    return 1;
-    error:
-    lua_pushboolean(L, false);
     return 1;
 }
 
 static int event_display(lua_State *L)
 {
     event_t *event = lua_touserdata(L, -1);
-    char *str = NULL;
+    char *str = "Super event";
 
     if (event == NULL)
         return luaL_error(L, "display: Can't get userdata");
-    asprintf(&str, "{ index = %d, pid = %d }",
-        event->index,
-        binder()->get->list[event->index]
-    );
+    // asprintf(&str, "{ index = %d, pid = %d }",
+    //     event->index,
+    //     binder()->get->list[event->index]
+    // );
     lua_pushstring(L, str);
-    free(str);
+    // free(str);
     return 1;
 }
 
@@ -156,7 +174,7 @@ static int event_new(lua_State *L)
 
     if (event == NULL)
         return luaL_error(L, "Can't create userdata");
-    event->index = -1;
+    event->head = NULL;
     lua_newtable(L);
     lua_pushstring(L, "__index");
     lua_newtable(L);
