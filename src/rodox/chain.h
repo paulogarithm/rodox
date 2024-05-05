@@ -1,8 +1,5 @@
-/*
-** EPITECH PROJECT, 2024
-** repo
-** File description:
-** chain
+/**
+ * Rodox chain list header
 */
 
 #ifndef CHAIN_H_

@@ -1,10 +1,3 @@
-/*
-** EPITECH PROJECT, 2024
-** rodox
-** File description:
-** shm-1
-*/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>

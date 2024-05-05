@@ -35,17 +35,17 @@ static int adder_new(lua_State *L)
     if (data == NULL)
         return luaL_error(L, "Can't create userdata");
     data->number = 0;
-    lua_newtable(L);
+    lua_newtable(L);                // metatable
     lua_pushstring(L, "__index");
-    lua_newtable(L);
+    lua_newtable(L);                // index
     lua_pushstring(L, "inc");
     lua_pushcfunction(L, adder_add);
     lua_settable(L, -3);
     lua_pushstring(L, "display");
     lua_pushcfunction(L, adder_display);
     lua_settable(L, -3);
-    lua_settable(L, -3);
-    lua_setmetatable(L, -2);
+    lua_settable(L, -3);            // !index
+    lua_setmetatable(L, -2);        // !metatable
     return 1;
 }
 

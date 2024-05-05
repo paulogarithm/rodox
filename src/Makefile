@@ -1,16 +1,19 @@
-MODULES = ./modules
-DIRECTORY = $(sort $(dir $(wildcard $(MODULES)/*/)))
-BUILD = build.sh
-LIB = ../lib
+BUILD = ./modules/build.sh
+MOD = events adder
+COMMON = ./rodox
+
+define do
+	$(MAKE) -C $(COMMON) $(1)
+	$(BUILD) $(1) $(MOD)
+endef
 
 all:
-	for n in $(DIRECTORY); do \
-		$(MODULES)/$(BUILD) $(basename $$n); \
-	done;
-
+	$(call do,$@)
+clean:
+	$(call do,$@)
 fclean:
-	$(RM) $(wildcard $(LIB)/*.so) $(wildcard $(LIB)/*.dll)
+	$(call do,$@)
+re:
+	$(call do,$@)
 
-re: fclean all
-
-.PHONY: all fclean
+.PHONY: all clean fclean re

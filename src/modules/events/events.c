@@ -8,12 +8,13 @@
 #include <unistd.h>
 #include <iso646.h>
 #include <string.h>
-#include <sys/signal.h>
+#include <signal.h>
 #include <sys/types.h>
 #include <sys/shm.h>
 
-#include "chain/chain.h"
+#include "chain.h"
 
+int kill(pid_t pid, int sig);
 int asprintf(char **strp, const char *fmt, ...);
 
 #define EVENT_MAX __UINT16_MAX__

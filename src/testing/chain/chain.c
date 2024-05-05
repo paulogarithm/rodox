@@ -1,10 +1,3 @@
-/*
-** EPITECH PROJECT, 2024
-** repo
-** File description:
-** chain
-*/
-
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdarg.h>

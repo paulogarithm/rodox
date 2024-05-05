@@ -1,10 +1,3 @@
-/*
-** EPITECH PROJECT, 2024
-** repo
-** File description:
-** chain
-*/
-
 #ifndef CHAIN_H_
     #define CHAIN_H_
 
