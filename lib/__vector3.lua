@@ -6,9 +6,10 @@ local Vector3 = {}
 
 local vectorMt = {}
 
-local abs, floor, ceil = math.abs, math.floor, math.ceil
-local min, max, sqrt = math.min, math.max, math.sqrt
-local sin, acos, rad = math.sin, math.acos, math.rad
+local abs, floor, ceil = _G.math.abs, _G.math.floor, _G.math.ceil
+local min, max, sqrt = _G.math.min, _G.math.max, _G.math.sqrt
+local acos = _G.math.acos
+local assert, warn = _G.assert, _G.warn
 
 local function errorCase(x, y, z)
     local t = { x = type(x), y = type(y), z = type(z) }
@@ -89,7 +90,7 @@ function vectorMt.__index:Cross(other)
     return self.Magnitude * other.Magnitude * self:Angle(other)
 end
 
-function vectorMt.__index:Lerp  (goal, alpha)
+function vectorMt.__index:Lerp(goal, alpha)
     return self + (goal - self) * alpha
 end
 
@@ -104,6 +105,10 @@ function vectorMt:__add(foreign)
         self.Y + foreign.Y,
         self.Z + foreign.Z
     )
+end
+
+function vectorMt:__eq(foreign)
+    return self.X == foreign.X and self.Y == foreign.Y and self.Z == foreign.Z
 end
 
 function vectorMt:__sub(foreign)
