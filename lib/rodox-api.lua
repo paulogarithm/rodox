@@ -12,5 +12,7 @@
 --| Made with <3 by paulogarithm
 --| 
 
+_G.warn = print
 _G.Adder = require("adder")
 _G.Events = require("events")
+_G.Vector3 = require("__vector3")
