@@ -6,10 +6,10 @@ local Color3 = {}
 local yourColor3 = {}
 local mtColor3 = { __index = yourColor3 }
 
-local sub, tonumber, assert, tostring, error, setmetatable, sformat =
+local sub, tonumber, assert, tostring, error, setmetatable, sformat, warn =
     _G.string.sub, _G.tonumber, _G.assert,
     _G.tostring, _G.error, _G.setmetatable,
-    _G.string.format
+    _G.string.format, _G.warn
 
 ---
 
@@ -35,6 +35,10 @@ end
 
 function mtColor3:__eq(other)
     return (self.R == other.R) and (self.G == other.G) and (self.B == other.B)
+end
+
+function mtColor3:__newindex()
+    warn("the color class is locked.")
 end
 
 ---
