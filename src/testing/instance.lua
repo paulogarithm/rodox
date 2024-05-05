@@ -1,6 +1,5 @@
 local Instance = require("instance")
 
----
-
 local what = Instance.new("Folder")
-print(what.ClassName)
+-- what.Name = "hello"
+print(what.Name)

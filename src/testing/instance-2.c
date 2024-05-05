@@ -1,6 +1,8 @@
 #include <lua5.4/lua.h>
 #include <lua5.4/lauxlib.h>
 #include <stdlib.h>
+#include <stdint.h>
+#include <uuid/uuid.h>
 
 #include "chain/chain.h"
 #include "hashtables/hashtables.h"
@@ -8,6 +10,12 @@
 typedef struct {
     lua_State *L;
 } instance_t;
+
+#define PROPERTY(L, k, def, f) do { \
+        lua_pushstring(L, k); \
+        lua_push##f(L, def); \
+        lua_settable(L, -3); \
+    } while (0)
 
 static int instance_close(lua_State *L)
 {
@@ -21,11 +29,18 @@ static int instance_close(lua_State *L)
 
 static void instance_init(instance_t *self)
 {
+    union {
+        __uint128_t n;
+        uuid_t u;
+    } u = { .n = 0 };
+
     self->L = luaL_newstate();
     lua_newtable(self->L);
-    lua_pushstring(self->L, "ClassName");
-    lua_pushstring(self->L, "Instance");
-    lua_settable(self->L, -3);
+    uuid_generate(u.u);
+    PROPERTY(self->L, "Archivable", 0, boolean);
+    PROPERTY(self->L, "ClassName", "Instance", string);
+    PROPERTY(self->L, "Name", "Instance", string);
+    PROPERTY(self->L, "UniqueId", u.n, integer);
 }
 
 static int instance_getter(lua_State *L)
