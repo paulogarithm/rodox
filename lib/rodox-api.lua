@@ -16,3 +16,4 @@ _G.warn = print
 _G.Adder = require("adder")
 _G.Events = require("events")
 _G.Vector3 = require("__vector3")
+_G.Color3 = require("__color3")
